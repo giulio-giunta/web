@@ -20,22 +20,20 @@ jobs:
             unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
             echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" | tee -a $HOME/.bashrc
             echo "export SONAR_SCANNER_OPTS='-server'" | tee -a $HOME/.bashrc
-            sleep 60
       - run:
           name: Execute the SonarScanner
           command: |
-            source $HOME/.bashrc
             sonar-scanner \
             -Dsonar.organization=giulio-giunta \
             -Dsonar.projectKey=web-sonar \
-            -Dsonar.sources=. \
+            -Dsonar.sources=$HOME/project \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_TOKEN}
             
   build-test-publish:
-      machine:
-        image: ubuntu-2004:202107-02
+      docker:
+      - image: 'cimg/base:stable'
       steps:
         - checkout        
         - run:
