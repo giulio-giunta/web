@@ -23,6 +23,8 @@ jobs:
       - run:
           name: Execute the SonarScanner
           command: |
+            echo $PATH 
+            which sonar-scanner
             /home/circleci/.sonar/sonar-scanner-4.4.0.2170-linux/bin/sonar-scanner \
             -Dsonar.organization=giulio-giunta \
             -Dsonar.projectKey=web-sonar \
