@@ -20,7 +20,7 @@ jobs:
             unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
             echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" | tee -a $HOME/.bashrc
             echo "export SONAR_SCANNER_OPTS='-server'" | tee -a $HOME/.bashrc
-            sleep 10
+            sleep 60
       - run:
           name: Execute the SonarScanner
           command: |
