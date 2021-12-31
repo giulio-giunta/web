@@ -3,8 +3,8 @@
 docker-compose up -d 
 sudo snap install jq
 # sudo apt-get install jq -y 
-PROJECTKEY="geekzone-sonar" 
-Check=`curl -s -u admin:geekzone http://localhost:9000/api/qualitygates/project_status?projectKey=$PROJECTKEY | jq '.projectStatus.status'` 
+PROJECTKEY="web-sonar" 
+Check=`curl -s https://sonarcloud.io/api/qualitygates/project_status?projectKey=$PROJECTKEY | jq '.projectStatus.status'` 
 max_retry=30 
 counter=0 
 until [ "$Check" == '"OK"' ] || [ "$Check" == '"ERROR"' ] || [ "$Check" ==  '"WARN"' ]; 
@@ -21,8 +21,8 @@ QGSTATUS=`curl -s -u admin:geekzone http://localhost:9000/api/qualitygates/proje
 if [ "$QGSTATUS" = '"OK"' ] 
 then 
 echo "Status is OK" 
-echo "Stopping docker-compose ...."  
-docker-compose down  
+# echo "Stopping docker-compose ...."  
+# docker-compose down  
 echo "Sonar scanning has successfully ended with the status 'OK'" 
 elif [ "$QGSTATUS" = '"WARN"' ] 
 then  
