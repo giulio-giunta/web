@@ -1,40 +1,132 @@
-# This code is licensed from CircleCI to the user under the MIT license.
-# See here for details: https://circleci.com/developer/orbs/licensing
-# This code is licensed from CircleCI to the user under the MIT license. See
-# https://circleci.com/orbs/registry/licensing for details.
-# Part of this code came from https://circleci.com/orbs/registry/orb/corballis/sonarqube-analyzer
 version: 2.1
-description: "This orb measures code quality using SonarQube server and fails the build when the predefined quality gate has broken. Default sonarScanner is used to execute analysis. The script runs with zero tolerancy in terms of errors. If any error found during the analysis the build will fail."
-commands:
-  check-code-quality:
-    description: Check Code Quality
-    parameters:
-        sonar_server_url:
-            type: string
-            description: "URL of your SonarQube server. e.g.: http://my.sonarqube,server:9000"
-            default: "$SONAR_SERVER"
-        sonar_login:
-            description: "Authentication key (sonar.login paramter) to access SonarQube and perform analysis"
-            type: string
-            default: "$SONAR_TOKEN"
-        sonar_sources:
-            description: "Where the files are located?"
-            type: string
-            default: "$SONAR_SOURCES"
+jobs:
+  sonarscan:
+    docker:
+      - image: 'cimg/base:stable'
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
     steps:
-    - run:
-        name: Install Sonarqube scanner
-        command: |
-            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873.zip
-            unzip sonar-scanner-cli-4.2.0.1873.zip
-
-    - run:
-        name: Run Sonarscanner
-        command: |
-            export SONAR_SCANNER_OPTS="-Xmx2048m"
-            eval ./sonar-scanner-4.2.0.1873/bin/sonar-scanner -Dsonar.host.url=<< parameters.sonar_server_url >> \
-            -Dsonar.sources=<< parameters.sonar_sources >> \
-            -Dsonar.login=<< parameters.sonar_login >>
-
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.7           
+      - run:
+          name: Download and unzip the SonarScanner
+          command: |
+            echo "export SONAR_SCANNER_VERSION=4.4.0.2170" >> $BASH_ENV
+            source $BASH_ENV
+            echo "export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux" >> $BASH_ENV
+            source $BASH_ENV
+            curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
+            unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+            echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" >> $BASH_ENV
+            source $BASH_ENV
+            echo "export SONAR_SCANNER_OPTS='-server'" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Execute the SonarScanner
+          command: |
+            sonar-scanner \
+            -Dsonar.organization=giulio-giunta \
+            -Dsonar.projectKey=web-sonar \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.python.version=3.9 \
+            -Dsonar.login=${SONAR_TOKEN}
 orbs: 
   sonarscanner: psl/sonarscanner@0.0.4
+
+#   build-test-publish:
+#       docker:
+#       - image: 'cimg/base:stable'
+#       steps:
+#         - checkout        
+#         - run:
+#             name: Build frontend image 
+#             background: true
+#             command: |
+#               TAG="0.1.${CIRCLE_BUILD_NUM}"
+#               docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#               docker build -t geekzone/frontend:$TAG -f docker/proxy/Dockerfile .
+#         - run:
+#             name: "Build backend image in docker-compose and run Sonar scanning" 
+#             command: |  
+#               bash sonar_run.sh
+#         - run:
+#             name: Run Testy McTestface tests
+#             command: |
+#               docker-compose up -d
+#               docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
+#         - store_test_results:
+#             path: test-results/test-output
+#         - deploy:
+#             name: Push frontend image to Docker Hub
+#             background: true
+#             command: |
+#               TAG="0.1.${CIRCLE_BUILD_NUM}"
+#               docker push geekzone/frontend:$TAG
+#         - deploy:
+#             name: Push backend image to Docker Hub
+#             command: |
+#               TAG="0.1.${CIRCLE_BUILD_NUM}"
+#               docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#               docker tag project_web:latest geekzone/backend:$TAG
+#               docker push geekzone/backend:$TAG
+
+#   deploy-prod:
+#     docker:
+#       - image: 'cimg/base:stable'
+#     steps:
+#       - checkout
+#       - run:
+#           name: Install dependencies
+#           command: |
+#             sudo apt-get update
+#             sudo apt install gettext-base moreutils
+#             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#             unzip awscliv2.zip
+#             sudo ./aws/install
+#       - run:
+#           name: Fill out template variables in yaml files
+#           command: |
+#             envsubst < k8s/prod-environment/deploy-prod.yaml | sponge k8s/prod-environment/deploy-prod.yaml
+#       - run:
+#           name: connect to k8s cluster
+#           command: |
+#             aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+#       - kubernetes/install-kubectl
+#       - kubernetes/create-or-update-resource:
+#           get-rollout-status: true
+#           resource-file-path: k8s/prod-environment/deploy-prod.yaml
+#           resource-name: deployment/gz-web
+#           namespace: prod
+#           show-kubectl-command: true
+# orbs:
+#   kubernetes: circleci/kubernetes@0.12.0
+ 
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - sonarscan:
+          context:
+            - SonarCloud
+      # - build-test-publish:
+      #     filters:
+      #         branches:
+      #           ignore: 
+      #           - /junk-.*/
+      #           - /doc-.*/
+      #     context:
+      #       - org-global
+      # - deploy-prod:
+      #     requires:
+      #     - build-test-publish 
+      #     filters:
+      #         branches:
+      #           only: master
+      #     context:
+      #       - org-global
+      
+
