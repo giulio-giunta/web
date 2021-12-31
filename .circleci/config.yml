@@ -29,7 +29,7 @@ jobs:
             sonar-scanner \
             -Dsonar.organization=giulio-giunta \
             -Dsonar.projectKey=web-sonar \
-            -Dsonar.sources=$HOME/project \
+            -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_TOKEN}
