@@ -14,10 +14,13 @@ jobs:
           name: Download and unzip the SonarScanner
           command: |
             echo "export SONAR_SCANNER_VERSION=4.4.0.2170" >> $BASH_ENV
+            source $BASH_ENV
             echo "export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux" >> $BASH_ENV
+            source $BASH_ENV
             curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
             unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
             echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" >> $BASH_ENV
+            source $BASH_ENV
             echo "export SONAR_SCANNER_OPTS='-server'" >> $BASH_ENV
             source $BASH_ENV
       - run:
