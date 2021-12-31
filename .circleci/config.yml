@@ -18,9 +18,8 @@ jobs:
       - run:
           name: Run Sonarqube scanner
           command: |
-            export SONAR_TOKEN=<My token>
             eval ./sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner -Dsonar.projectKey=geekzone \
-            -Dsonar.organization=Geek.Zone \
+            -Dsonar.organization=giulio-giunta \
             -Dsonar.projectName=web \
             -Dsonar.sources=. \
             -Dsonar.sourceEncoding=UTF-8 \
