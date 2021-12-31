@@ -13,12 +13,14 @@ jobs:
       - run:
           name: Download and unzip the SonarScanner
           command: |
+            echo "export SONAR_TOKEN=2854cddb550c53081a4ad993cc66efece650d6c3" | tee -a $HOME/.bashrc
             export SONAR_SCANNER_VERSION=4.4.0.2170
             export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
             curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
             unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-            export PATH=$SONAR_SCANNER_HOME/bin:$PATH
-            export SONAR_SCANNER_OPTS="-server"
+            echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" | tee -a $HOME/.bashrc
+            echo "export SONAR_SCANNER_OPTS='-server'" | tee -a $HOME/.bashrc
+            source $HOME/.bashrc
       - run:
           name: Execute the SonarScanner
           command: |
@@ -26,7 +28,9 @@ jobs:
             -Dsonar.organization=giulio-giunta \
             -Dsonar.projectKey=web-sonar \
             -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io 
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.python.version=3.9 \
+            -Dsonar.login=${SONAR_TOKEN}
             
   build-test-publish:
       machine:
