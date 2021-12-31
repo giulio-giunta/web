@@ -1,11 +1,8 @@
 version: 2.1
 jobs:
   sonarscan:
-    docker:
-      - image: 'cimg/base:stable'
-        auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+    machine:
+        image: ubuntu-2004:202107-02
     steps:
       - checkout
       - setup_remote_docker:
