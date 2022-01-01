@@ -29,11 +29,11 @@ jobs:
           command: |
             sonar-scanner \
             -Dsonar.organization=giulio-giunta \
-            -Dsonar.projectKey=web-sonar \
+            -Dsonar.projectKey=giulio-giunta_web \
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.python.version=3.9 \
-            -Dsonar.login=${SONAR_TOKEN}
+            -Dsonar.login=${SONAR_AUTH_TOKEN}
       - sonarcloud/check_quality_gate
       
 
