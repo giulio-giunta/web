@@ -41,5 +41,7 @@ job:
 workflows:
   main:
     jobs:
+      - sonarscan:
+          context: SonarCloud
       - sonarcloud/check_quality_gate:
           context: SonarCloud
