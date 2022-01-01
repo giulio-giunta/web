@@ -5,7 +5,7 @@ Take a look at the original [spec doc](https://docs.google.com/document/d/1c43e1
 
 # Progress so far
 Here's what the front page looks like in [light mode](/screencapture-gzweb-light-2021-03-22-20_23_50.png) and in
-[dark mode](/screencapture-gzweb-dark-2021-03-22-20_24_03.png)
+[dark mode](/screencapture-gzweb-dark-2021-03-22-20_24_03.png).
 
 ## Running the project locally
 
