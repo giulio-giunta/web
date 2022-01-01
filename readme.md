@@ -10,7 +10,7 @@ Here's what the front page looks like in [light mode](/screencapture-gzweb-light
 ## Running the project locally
 
 You should be able to setup this project on any operating system that supports Django. We have instructions for Ubuntu based linux distributions and for Windows 10. Both can be found below.
-Alternatively you can run this project in containers, by using docker-compose.
+Alternatively you can run this project in containers, by using docker-compose
 
 ### Ubuntu based Linux (or WSL on Microsoft Windows)
 
