@@ -1,8 +1,6 @@
 # This code is licensed from CircleCI to the user under the MIT license.
 # See here for details: https://circleci.com/developer/orbs/licensing
 version: 2.1
-orbs: 
-  sonarcloud: extendaretail/sonarcloud@0.0.2
 jobs:
   sonarscan:
     docker:
@@ -36,6 +34,8 @@ jobs:
       - run:
           name: Check Quality Gate
           command: sonarcloud/check_quality_gate
+orbs: 
+  sonarcloud: extendaretail/sonarcloud@0.0.2
 
 workflows:
   main:
