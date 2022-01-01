@@ -3,7 +3,7 @@
 version: 2.1
 orbs: 
   sonarcloud: extendaretail/sonarcloud@0.0.2
-job:
+jobs:
   sonarscan:
     docker:
     - image: 'cimg/base:stable'
@@ -33,15 +33,12 @@ job:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_TOKEN}
-  check_quality_gate:
-    steps:
-      - checkout
-      - sonarcloud/check_quality_gate
+      - run:
+          name: Check Quality Gate
+          command: sonarcloud/check_quality_gate
 
 workflows:
   main:
     jobs:
       - sonarscan:
-          context: SonarCloud
-      - sonarcloud/check_quality_gate:
           context: SonarCloud
