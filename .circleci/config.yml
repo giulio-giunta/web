@@ -34,6 +34,7 @@ jobs:
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_TOKEN}
       - sonarcloud/check_quality_gate
+      - sonarcloud/prepare_scanner
 
 workflows:
   main:
