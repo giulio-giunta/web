@@ -49,7 +49,7 @@ jobs:
           command: |
             docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
       - store_test_results:
-          path: test-results/test-output
+          path: test-results/
       # - deploy:
       #     name: Push frontend image to Docker Hub
       #     background: true
