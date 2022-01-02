@@ -14,7 +14,7 @@ jobs:
       - sonarcloud/prepare_scanner       
       - run:
           name: Download and unzip the SonarScanner
-          command: .
+          command: |
             echo "export SONAR_SCANNER_VERSION=4.4.0.2170" >> $BASH_ENV
             source $BASH_ENV
             echo "export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux" >> $BASH_ENV
