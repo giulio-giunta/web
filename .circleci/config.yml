@@ -1,8 +1,7 @@
-# This code is licensed from CircleCI to the user under the MIT license.
-# See here for details: https://circleci.com/developer/orbs/licensing
 version: 2.1
 orbs: 
   sonarcloud: extendaretail/sonarcloud@0.0.2
+  kubernetes: circleci/kubernetes@0.12.0
 jobs:
   sonarscan:
     docker:
@@ -35,6 +34,72 @@ jobs:
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_AUTH_TOKEN}
       - sonarcloud/check_quality_gate
+
+  build-test-publish:
+      docker:
+      - image: 'cimg/base:stable'
+      steps:
+        - checkout        
+        - run:
+            name: Build frontend image 
+            background: true
+            command: |
+              TAG="0.1.${CIRCLE_BUILD_NUM}"
+              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+              docker build -t geekzone/frontend:$TAG -f docker/proxy/Dockerfile .
+        - run:
+            name: "Build backend image in docker-compose and run Sonar scanning" 
+            command: |  
+              bash sonar_run.sh
+        - run:
+            name: Run Testy McTestface tests
+            command: |
+              docker-compose up -d
+              docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
+        - store_test_results:
+            path: test-results/test-output
+        - deploy:
+            name: Push frontend image to Docker Hub
+            background: true
+            command: |
+              TAG="0.1.${CIRCLE_BUILD_NUM}"
+              docker push geekzone/frontend:$TAG
+        - deploy:
+            name: Push backend image to Docker Hub
+            command: |
+              TAG="0.1.${CIRCLE_BUILD_NUM}"
+              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+              docker tag project_web:latest geekzone/backend:$TAG
+              docker push geekzone/backend:$TAG
+
+  deploy-prod:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt install gettext-base moreutils
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+      - run:
+          name: Fill out template variables in yaml files
+          command: |
+            envsubst < k8s/prod-environment/deploy-prod.yaml | sponge k8s/prod-environment/deploy-prod.yaml
+      - run:
+          name: connect to k8s cluster
+          command: |
+            aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+      - kubernetes/install-kubectl
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: k8s/prod-environment/deploy-prod.yaml
+          resource-name: deployment/gz-web
+          namespace: prod
+          show-kubectl-command: true
       
 
 workflows:
@@ -42,3 +107,19 @@ workflows:
     jobs:
       - sonarscan:
           context: SonarCloud
+      - build-test-publish:
+          filters:
+              branches:
+                ignore: 
+                - /junk-.*/
+                - /doc-.*/
+          context:
+            - org-global
+      - deploy-prod:
+          requires:
+          - build-test-publish 
+          filters:
+              branches:
+                only: master
+          context:
+            - org-global
