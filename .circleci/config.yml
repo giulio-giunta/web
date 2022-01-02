@@ -4,15 +4,10 @@ orbs:
   kubernetes: circleci/kubernetes@0.12.0
 jobs:
   scan-build-test-publish:
-    docker:
-    - image: 'cimg/base:stable'
-      auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+    machine:
+      image: ubuntu-2004:202107-02
     steps:
-      - checkout   
-      - setup_remote_docker:
-          version: 20.10.7        
+      - checkout          
       - sonarcloud/prepare_scanner       
       - run:
           name: Download and unzip the SonarScanner
@@ -55,19 +50,19 @@ jobs:
             docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
       - store_test_results:
           path: test-results/test-output
-      - deploy:
-          name: Push frontend image to Docker Hub
-          background: true
-          command: |
-            TAG="0.1.${CIRCLE_BUILD_NUM}"
-            docker push geekzone/frontend:$TAG
-      - deploy:
-          name: Push backend image to Docker Hub
-          command: |
-            TAG="0.1.${CIRCLE_BUILD_NUM}"
-            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-            docker tag project_web:latest geekzone/backend:$TAG
-            docker push geekzone/backend:$TAG
+      # - deploy:
+      #     name: Push frontend image to Docker Hub
+      #     background: true
+      #     command: |
+      #       TAG="0.1.${CIRCLE_BUILD_NUM}"
+      #       docker push geekzone/frontend:$TAG
+      # - deploy:
+      #     name: Push backend image to Docker Hub
+      #     command: |
+      #       TAG="0.1.${CIRCLE_BUILD_NUM}"
+      #       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      #       docker tag project_web:latest geekzone/backend:$TAG
+      #       docker push geekzone/backend:$TAG
 
   deploy-prod:
     docker:
