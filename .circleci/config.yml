@@ -42,12 +42,10 @@ jobs:
       # - sonarcloud/check_quality_gate
 
   build-test-publish:
-      docker:
-      - image: 'cimg/base:stable'
+      machine:
+        image: ubuntu-2004:202107-02
       steps:
         - checkout
-        - setup_remote_docker:
-            version: 20.10.7
         - run:
             name: Build frontend image 
             background: true
