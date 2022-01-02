@@ -39,12 +39,10 @@ jobs:
       - sonarcloud/check_quality_gate
 
   build-test-publish:
-    docker:
-      - image: 'cimg/base:stable'
+    machine:
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.7
       - run:
           name: Build frontend image 
           background: true
@@ -53,9 +51,8 @@ jobs:
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
             docker build -t geekzone/frontend:$TAG -f docker/proxy/Dockerfile .
       - run:
-          name: "Build backend image in docker-compose and run Sonar scanning" 
+          name: "Build backend image in docker-compose" 
           command: docker-compose up -d
-      - sonarcloud/check_quality_gate
       - run:
           name: Run Testy McTestface tests
           command: docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
