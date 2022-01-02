@@ -3,7 +3,7 @@ orbs:
   sonarcloud: extendaretail/sonarcloud@0.0.2
   kubernetes: circleci/kubernetes@0.12.0
 jobs:
-  sonarscan:
+  scan-build-test-publish:
     docker:
     - image: 'cimg/base:stable'
       auth:
@@ -11,6 +11,8 @@ jobs:
           password: $DOCKER_PASSWORD
     steps:
       - checkout   
+      - setup_remote_docker:
+          version: 20.10.7        
       - sonarcloud/prepare_scanner       
       - run:
           name: Download and unzip the SonarScanner
@@ -36,12 +38,6 @@ jobs:
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_AUTH_TOKEN}
       - sonarcloud/check_quality_gate
-
-  build-test-publish:
-    machine:
-      image: ubuntu-2004:202107-02
-    steps:
-      - checkout
       - run:
           name: Build frontend image 
           background: true
@@ -103,10 +99,7 @@ jobs:
 workflows:
   main:
     jobs:
-      - sonarscan:
-          context: 
-            - org-global
-      - build-test-publish:
+      - scan-build-test-publish:
           filters:
               branches:
                 ignore: 
