@@ -9,31 +9,32 @@ jobs:
     steps:
       - checkout   
       - sonarcloud/prepare_scanner       
-      - run:
-          name: Download and unzip the SonarScanner
-          command: |
-            echo "export SONAR_SCANNER_VERSION=4.4.0.2170" >> $BASH_ENV
-            source $BASH_ENV
-            echo "export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux" >> $BASH_ENV
-            source $BASH_ENV
-            curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
-            unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-            echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" >> $BASH_ENV
-            source $BASH_ENV
-            echo "export SONAR_SCANNER_OPTS='-server'" >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          name: Execute the SonarScanner
-          # command: ./sonar_run.sh
-          command: |
-            sonar-scanner \
-            -Dsonar.organization=giulio-giunta \
-            -Dsonar.projectKey=giulio-giunta_web \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.python.version=3.9 \
-            -Dsonar.login=${SONAR_AUTH_TOKEN}
-      - sonarcloud/check_quality_gate
+      # - run:
+      #     name: Download and unzip the SonarScanner
+      #     command: |
+      #       echo "export SONAR_SCANNER_VERSION=4.4.0.2170" >> $BASH_ENV
+      #       source $BASH_ENV
+      #       echo "export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux" >> $BASH_ENV
+      #       source $BASH_ENV
+      #       curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
+      #       unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+      #       echo "export PATH=$SONAR_SCANNER_HOME/bin:$PATH" >> $BASH_ENV
+      #       source $BASH_ENV
+      #       echo "export SONAR_SCANNER_OPTS='-server'" >> $BASH_ENV
+      #       source $BASH_ENV
+      # - run:
+      #     name: Execute the SonarScanner
+      #     background: true
+      #     # command: ./sonar_run.sh
+      #     command: |
+      #       sonar-scanner \
+      #       -Dsonar.organization=giulio-giunta \
+      #       -Dsonar.projectKey=giulio-giunta_web \
+      #       -Dsonar.sources=. \
+      #       -Dsonar.host.url=https://sonarcloud.io \
+      #       -Dsonar.python.version=3.9 \
+      #       -Dsonar.login=${SONAR_AUTH_TOKEN}
+      # - sonarcloud/check_quality_gate
 
   build-test-publish:
       docker:
@@ -49,13 +50,11 @@ jobs:
               docker build -t geekzone/frontend:$TAG -f docker/proxy/Dockerfile .
         - run:
             name: "Build backend image in docker-compose and run Sonar scanning" 
-            command: |  
-              bash sonar_run.sh
+            command: docker-compose up -d
+        - sonarcloud/check_quality_gate
         - run:
             name: Run Testy McTestface tests
-            command: |
-              docker-compose up -d
-              docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
+            command: docker-compose run web python3 manage.py test 2>&1 | tee -a test-results/test-output
         - store_test_results:
             path: test-results/test-output
         - deploy:
