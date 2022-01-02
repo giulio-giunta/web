@@ -2,15 +2,15 @@ version: "3"
 
 services:
 
-  sonar-scanner: 
-    build:
-      context: .
-      dockerfile: docker/sonar/Dockerfile
-    container_name: sonar-scanner
-    command: >
-      sh -c "sonar-scanner -Dsonar.host.url=${SONAR_SERVER} -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_ORGANIZATION_$CIRCLE_PROJECT_REPONAME -Dsonar.python.version=3.9 -Dsonar.login=$SONAR_AUTH_TOKEN"
-    volumes:
-      - "$PWD:/usr/src"
+  # sonar-scanner: 
+  #   build:
+  #     context: .
+  #     dockerfile: docker/sonar/Dockerfile
+  #   container_name: sonar-scanner
+  #   command: >
+  #     sh -c "sonar-scanner -Dsonar.host.url=${SONAR_SERVER} -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_ORGANIZATION_$CIRCLE_PROJECT_REPONAME -Dsonar.python.version=3.9 -Dsonar.login=$SONAR_AUTH_TOKEN"
+  #   volumes:
+  #     - "$PWD:/usr/src"
     # depends_on: 
     #   - sonar-server
 
