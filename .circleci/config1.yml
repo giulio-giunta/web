@@ -20,7 +20,6 @@ jobs:
             source $BASH_ENV
       - run:
           name: Execute the SonarScanner
-          # command: ./sonar_run.sh
           command: |
             sonar-scanner \
             -Dsonar.organization=giulio-giunta \
@@ -29,7 +28,6 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.python.version=3.9 \
             -Dsonar.login=${SONAR_TOKEN}
-            curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=$Project > result.json
 
 #   build-test-publish:
 #       docker:
