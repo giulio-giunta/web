@@ -109,7 +109,7 @@ workflows:
             - org-global
       - deploy-prod:
           requires:
-          - build-test-publish 
+          - scan-build-test-publish 
           filters:
               branches:
                 only: master
