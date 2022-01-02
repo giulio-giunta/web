@@ -8,8 +8,8 @@ jobs:
     - image: 'cimg/base:stable'
     steps:
       - checkout  
-      - setup_remote_docker:
-          version: 20.10.7  
+      # - setup_remote_docker:
+      #     version: 20.10.7  
       - sonarcloud/prepare_scanner       
       # - run:
       #     name: Download and unzip the SonarScanner
@@ -41,7 +41,10 @@ jobs:
   build-test-publish:
       docker:
       - image: 'cimg/base:stable'
-      steps:   
+      steps:
+        - checkout
+        - setup_remote_docker:
+            version: 20.10.7
         - run:
             name: Build frontend image 
             background: true
